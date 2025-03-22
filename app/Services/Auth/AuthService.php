@@ -2,29 +2,41 @@
 
 namespace App\Services\Auth;
 
-use App\Repositories\Auth\AuthRepository;
+use App\Repositories\Auth\AuthRepositoryInterface;
+use App\Repositories\Auth\TenantRepositoryInterface;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Hash;
 use App\Services\Auth\TokenService;
+use App\Services\Auth\TenantService;
 use App\Services\Validation\PasswordService as PasswordValidationService;
 
 class AuthService
 {
     protected $authRepository;
+    protected $tenantRepository;
     protected $tokenService;
+    protected $tenantService;
     protected $passwordValidationService;
 
-    public function __construct(AuthRepository $authRepository, 
+    public function __construct(AuthRepositoryInterface $authRepository, 
+                                TenantRepositoryInterface $tenantRepository,
                                 TokenService $tokenService, 
+                                TenantService $tenantService,
                                 PasswordValidationService $passwordValidationService)
     {
         $this->authRepository = $authRepository;
+        $this->tenantRepository = $tenantRepository;
         $this->tokenService = $tokenService;
+        $this->tenantService = $tenantService;
         $this->passwordValidationService = $passwordValidationService;
     }
 
     public function register(array $data)
     {
+        $data['subdomain'] = $this->tenantService->generateSubdomain($data['name']);
+        $tenant = $this->tenantRepository->createTenant($data);
+        
+        $data['tenant_id'] = $tenant->id;
         $user = $this->authRepository->createUser($data);
 
         $token = $this->tokenService->generateToken($user);
@@ -32,6 +44,7 @@ class AuthService
         return [
             'message' => 'User registered successfully',
             'token' => $token,
+            'tenant_domain' => $tenant->subdomain,
         ];
     }
 

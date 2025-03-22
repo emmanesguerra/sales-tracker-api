@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\User;
+use App\Models\Tenant;
 
 class AuthControllerTest extends TestCase
 {
@@ -29,6 +30,9 @@ class AuthControllerTest extends TestCase
 
         // Create an instance of the AuthController
         $this->authController = new AuthController($this->authServiceMock);
+
+        
+        $this->withoutMiddleware('tenant');
     }
 
     public function testRegister()
@@ -55,9 +59,11 @@ class AuthControllerTest extends TestCase
     public function testLogin()
     {
         // Create a user to simulate login
+        $tenant = Tenant::factory()->create();
         $user = User::factory()->create([
             'email' => 'johndoe@example.com',
             'password' => bcrypt('password123'),
+            'tenant_id' => $tenant->id,
         ]);
 
         // Set up the mock to return a response when 'login' is called
@@ -84,9 +90,13 @@ class AuthControllerTest extends TestCase
 
     public function testLogout()
     {
+        $tenant = Tenant::factory()->create([
+            'subdomain' => 'example',
+        ]);
         $user = User::factory()->create([
             'email' => 'johndoe@example.com',
             'password' => bcrypt('password123'),
+            'tenant_id' => $tenant->id,
         ]);
 
         $token = $user->createToken('TestToken')->plainTextToken;
@@ -95,10 +105,12 @@ class AuthControllerTest extends TestCase
             ->once()
             ->andReturn(['message' => 'Logged out successfully']);
 
-        // Act: Make the logout request with the valid token
+        // Act: Make the logout request with the valid token, and disable the tenant middleware
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token
-        ])->postJson('/api/logout');
+                'Authorization' => 'Bearer ' . $token,
+                'Host' => 'example.localhost',
+            ])
+            ->post('http://' . $tenant->subdomain . '.' . env('APP_DOMAIN') . '/api/logout', []);
 
         // Assert: Check if the response status is 200 and the message is correct
         $response->assertStatus(200);

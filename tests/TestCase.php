@@ -10,8 +10,10 @@ abstract class TestCase extends BaseTestCase
     public function setUp(): void
     {
         parent::setUp();
+    }
 
-        // Run migrations for the test database
-        Artisan::call('migrate');
+    public function testDatabaseConnection()
+    {
+        $this->assertEquals('sqlite', config('database.default'));
     }
 }
