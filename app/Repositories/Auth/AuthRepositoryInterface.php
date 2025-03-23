@@ -8,5 +8,6 @@ interface AuthRepositoryInterface
 {
     public function createUser(array $data): User;
     public function findByEmail(string $email): ?User;
+    public function findByTenantId(int $tenantId): ?User;
     public function deleteTokens(User $user): void;
 }

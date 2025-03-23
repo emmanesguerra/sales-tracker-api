@@ -23,6 +23,11 @@ class AuthRepository implements AuthRepositoryInterface
         return User::where('email', $email)->first();
     }
 
+    public function findByTenantId(int $tenantId): User
+    {
+        return User::where('tenant_id', $tenantId)->first();
+    }
+
     public function deleteTokens(User $user): void
     {
         $user->tokens()->delete();
