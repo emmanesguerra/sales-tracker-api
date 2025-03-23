@@ -4,20 +4,24 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Scopes\TenantScope;
+use App\Traits\UserStamp;
 
 class Item extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, UserStamp;
 
-    protected $fillable = [
+    protected static function booted()
+    {
+        static::addGlobalScope(new TenantScope());
+    }
+
+    protected $fillable = [ 
         'tenant_id',
         'name',
         'description',
         'price',
         'stock',
-        'created_by',
-        'updated_by',
-        'deleted_by',
     ];
 
     protected $dates = ['deleted_at'];
