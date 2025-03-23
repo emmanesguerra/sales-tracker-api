@@ -77,6 +77,30 @@ class AuthRepositoryTest extends TestCase
         $this->assertEquals($email, $user->email);
     }
 
+    public function testFindByTenantId()
+    {
+        // Test data
+        $tenantId = 1;
+
+        $mockUser = Mockery::mock(User::class);
+
+        $mockUser->shouldReceive('getAttribute')
+            ->with('tenant_id')
+            ->andReturn(1);
+
+        $this->authRepository->shouldReceive('findByTenantId')
+            ->once()
+            ->with($tenantId)
+            ->andReturn($mockUser);
+
+        // Call the repository's method and pass the mocked User model
+        $user = $this->authRepository->findByTenantId($tenantId);
+
+        // Assert: Check if the user returned is the mock and if the tenant_id matches
+        $this->assertInstanceOf(User::class, $user);
+        $this->assertEquals($tenantId, $user->tenant_id);
+    }
+
     public function testDeleteTokens()
     {
         $userMock = Mockery::mock(User::class);

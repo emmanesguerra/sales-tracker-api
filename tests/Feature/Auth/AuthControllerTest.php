@@ -88,6 +88,28 @@ class AuthControllerTest extends TestCase
                  ]);
     }
 
+    public function testRetrieveToken()
+    {
+        $tenant = Tenant::factory()->create([
+            'subdomain' => 'example',
+        ]);
+        $user = User::factory()->create([
+            'tenant_id' => $tenant->id,
+        ]);
+
+        $this->authServiceMock->shouldReceive('retrieveToken')
+            ->once()
+            ->with($tenant->id)
+            ->andReturn(['token' => 'fake-token']);
+
+        $response = $this->getJson('http://' . $tenant->subdomain . '.' . env('APP_DOMAIN') . '/api/retrieve-token', []);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'token' => 'fake-token',
+        ]);
+    }
+
     public function testLogout()
     {
         $tenant = Tenant::factory()->create([

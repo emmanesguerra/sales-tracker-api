@@ -44,7 +44,7 @@ class AuthServiceTest extends TestCase
         );
     }
 
-    public function testRegistersAUserAndReturnsAToken()
+    public function testRegistersAUserAndReturnsASubdomain()
     {
         // Arrangements
         $user = Mockery::mock(User::class);
@@ -71,12 +71,6 @@ class AuthServiceTest extends TestCase
             ->once()
             ->andReturn($tenant);
         
-        // Mocking the generateToken method to return a token string
-        $this->tokenService->shouldReceive('generateToken')
-            ->once()
-            ->with($user)
-            ->andReturn('fake_token');
-    
         // Act: Call the register method
         $response = $this->authService->register([
             'name' => 'John Doe',
@@ -86,35 +80,32 @@ class AuthServiceTest extends TestCase
     
         // Assert: Check the response
         $this->assertArrayHasKey('message', $response);
-        $this->assertArrayHasKey('token', $response);
+        $this->assertArrayHasKey('tenant_domain', $response);
         $this->assertEquals('User registered successfully', $response['message']);
-        $this->assertEquals('fake_token', $response['token']);
         $this->assertEquals('tenant-subdomain', $response['tenant_domain']); // Assert the correct subdomain
     }
 
-    public function testLogsInAUserAndReturnsAToken()
+    public function testLogsInAUserAndReturnsASubdomain()
     {
-        // Arrangements
-        $user = new User();
-        $user->id = 1;
-        $user->name = 'John Doe';
-        $user->email = 'john@example.com';
-        $user->password = '$2y$10$eUjBrfNArCm9JT6M5Z.wKW8s0NZM7XxhgwwtLZzUme6KhV0nA2'; // Example hashed password
+        $mockUser = Mockery::mock(User::class);
 
         $this->authRepository->shouldReceive('findByEmail')
             ->once()
             ->with('john@example.com')
-            ->andReturn($user);
+            ->andReturn($mockUser);
+        
+        $mockUser->shouldReceive('getAttribute')
+            ->with('password')
+            ->andReturn(Hash::make('password123'));
 
         $this->passwordValidationService->shouldReceive('validatePassword')
             ->once()
-            ->with(Mockery::any(), $user->password)
+            ->with(Mockery::any(), $mockUser->password)
             ->andReturn(true);
-
-        $this->tokenService->shouldReceive('generateToken')
-            ->once()
-            ->with($user)
-            ->andReturn('fake_token');
+        
+        $mockUser->shouldReceive('getAttribute')
+            ->with('tenant')
+            ->andReturn((object) ['subdomain' => 'tenant-subdomain']);
 
         // Act: Call the login method
         $response = $this->authService->login([
@@ -123,8 +114,28 @@ class AuthServiceTest extends TestCase
         ]);
 
         // Assert: Check the response
+        $this->assertArrayHasKey('tenant_domain', $response);
+    }
+
+    public function testRetriveToken()
+    {
+        // Arrangement
+        $user = Mockery::mock(User::class);
+        $this->authRepository->shouldReceive('findByTenantId')
+            ->once()
+            ->with(1)
+            ->andReturn($user);
+
+        $this->tokenService->shouldReceive('generateToken')
+            ->once()
+            ->with($user)
+            ->andReturn('token');
+
+        // Act: Call the retrieveToken method
+        $response = $this->authService->retrieveToken(1);
+
+        // Assert: Check the response
         $this->assertArrayHasKey('token', $response);
-        $this->assertEquals('fake_token', $response['token']);
     }
 
     public function testLogsOutAUserAndDeletesTokens()

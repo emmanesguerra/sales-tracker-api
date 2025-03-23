@@ -39,11 +39,8 @@ class AuthService
         $data['tenant_id'] = $tenant->id;
         $user = $this->authRepository->createUser($data);
 
-        $token = $this->tokenService->generateToken($user);
-
         return [
             'message' => 'User registered successfully',
-            'token' => $token,
             'tenant_domain' => $tenant->subdomain,
         ];
     }
@@ -57,6 +54,21 @@ class AuthService
         }
 
         $this->passwordValidationService->validatePassword($credentials['password'], $user->password);
+
+        $tenant = $user->tenant;
+
+        return [
+            'tenant_domain' => $tenant->subdomain
+        ];
+    }
+
+    public function retrieveToken(int $tenantId)
+    {
+        $user = $this->authRepository->findByTenantId($tenantId);
+
+        if (!$user) {
+            throw new AuthenticationException('Invalid credentials');
+        }
         
         $token = $this->tokenService->generateToken($user);
 

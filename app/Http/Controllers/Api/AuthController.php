@@ -27,6 +27,11 @@ class AuthController extends Controller
         return response()->json($this->authService->login($request->validated()));
     }
 
+    public function retrieve(Request $request)
+    {
+        return response()->json($this->authService->retrieveToken($request->tenant->id));
+    }
+
     public function logout(Request $request)
     {
         return response()->json($this->authService->logout($request->user()));
