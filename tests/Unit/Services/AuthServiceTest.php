@@ -44,73 +44,56 @@ class AuthServiceTest extends TestCase
         );
     }
 
-    public function testRegistersAUserAndReturnsASubdomain()
+    protected function mockUserAndTenant($userAttributes = [], $tenantAttributes = [])
     {
-        // Arrangements
         $user = Mockery::mock(User::class);
         $tenant = Mockery::mock(Tenant::class);
 
-        $tenant->shouldReceive('getAttribute')
-            ->with('id')
-            ->andReturn(1);
+        $tenant->shouldReceive('getAttribute')->with('id')->andReturn($tenantAttributes['id'] ?? 1);
+        $tenant->shouldReceive('getAttribute')->with('subdomain')->andReturn($tenantAttributes['subdomain'] ?? 'tenant-subdomain');
 
-        $tenant->shouldReceive('getAttribute')
-            ->with('subdomain')
-            ->andReturn('tenant-subdomain'); 
-        
-        $this->authRepository->shouldReceive('createUser')
-            ->once()
-            ->andReturn($user);
-        
-        $this->tenantService->shouldReceive('generateSubdomain')
-            ->once()
-            ->with('John Doe')
-            ->andReturn('john-doe');
-        
-        $this->tenantRepository->shouldReceive('createTenant')
-            ->once()
-            ->andReturn($tenant);
-        
+        $user->shouldReceive('getAttribute')->with('tenant')->andReturn((object) ['subdomain' => $tenant->subdomain]);
+
+        return [$user, $tenant];
+    }
+
+    public function testRegistersAUserAndReturnsASubdomain()
+    {
+        [$user, $tenant] = $this->mockUserAndTenant();
+
+        // Mock interactions
+        $this->authRepository->shouldReceive('createUser')->once()->andReturn($user);
+        $this->tenantService->shouldReceive('generateSubdomain')->once()->with('John Doe')->andReturn('john-doe');
+        $this->tenantRepository->shouldReceive('createTenant')->once()->andReturn($tenant);
+
         // Act: Call the register method
         $response = $this->authService->register([
             'name' => 'John Doe',
             'email' => 'john@example.com',
             'password' => 'password123',
         ]);
-    
+
         // Assert: Check the response
         $this->assertArrayHasKey('message', $response);
         $this->assertArrayHasKey('tenant_domain', $response);
         $this->assertEquals('User registered successfully', $response['message']);
-        $this->assertEquals('tenant-subdomain', $response['tenant_domain']); // Assert the correct subdomain
+        $this->assertEquals('tenant-subdomain', $response['tenant_domain']);
     }
 
     public function testLogsInAUserAndReturnsASubdomain()
     {
         $mockUser = Mockery::mock(User::class);
+        $this->authRepository->shouldReceive('findByEmail')->once()->with('john@example.com')->andReturn($mockUser);
 
-        $this->authRepository->shouldReceive('findByEmail')
-            ->once()
-            ->with('john@example.com')
-            ->andReturn($mockUser);
+        $mockUser->shouldReceive('getAttribute')->with('password')->andReturn(Hash::make('password123'));
+        $this->passwordValidationService->shouldReceive('validatePassword')->once()->with(Mockery::any(), $mockUser->password)->andReturn(true);
         
-        $mockUser->shouldReceive('getAttribute')
-            ->with('password')
-            ->andReturn(Hash::make('password123'));
-
-        $this->passwordValidationService->shouldReceive('validatePassword')
-            ->once()
-            ->with(Mockery::any(), $mockUser->password)
-            ->andReturn(true);
-        
-        $mockUser->shouldReceive('getAttribute')
-            ->with('tenant')
-            ->andReturn((object) ['subdomain' => 'tenant-subdomain']);
+        $mockUser->shouldReceive('getAttribute')->with('tenant')->andReturn((object) ['subdomain' => 'tenant-subdomain']);
 
         // Act: Call the login method
         $response = $this->authService->login([
             'email' => 'john@example.com',
-            'password' => 'password123',  // Correct password
+            'password' => 'password123',
         ]);
 
         // Assert: Check the response
@@ -121,15 +104,9 @@ class AuthServiceTest extends TestCase
     {
         // Arrangement
         $user = Mockery::mock(User::class);
-        $this->authRepository->shouldReceive('findByTenantId')
-            ->once()
-            ->with(1)
-            ->andReturn($user);
+        $this->authRepository->shouldReceive('findByTenantId')->once()->with(1)->andReturn($user);
 
-        $this->tokenService->shouldReceive('generateToken')
-            ->once()
-            ->with($user)
-            ->andReturn('token');
+        $this->tokenService->shouldReceive('generateToken')->once()->with($user)->andReturn('token');
 
         // Act: Call the retrieveToken method
         $response = $this->authService->retrieveToken(1);
@@ -142,10 +119,7 @@ class AuthServiceTest extends TestCase
     {
         // Arrangement
         $user = Mockery::mock(User::class);
-        $this->authRepository->shouldReceive('deleteTokens')
-            ->once()
-            ->with($user)
-            ->andReturnNull();
+        $this->authRepository->shouldReceive('deleteTokens')->once()->with($user)->andReturnNull();
 
         // Act: Call the logout method
         $response = $this->authService->logout($user);

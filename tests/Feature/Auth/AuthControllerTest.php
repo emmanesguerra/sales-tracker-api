@@ -6,7 +6,6 @@ use Tests\TestCase;
 use Mockery;
 use App\Services\Auth\AuthService;
 use App\Http\Controllers\Api\AuthController;
-use Illuminate\Http\Request;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\User;
 use App\Models\Tenant;
@@ -22,51 +21,55 @@ class AuthControllerTest extends TestCase
     {
         parent::setUp();
 
-        // Mock AuthService
         $this->authServiceMock = Mockery::mock(AuthService::class);
-
-        // Bind the mock to the container for dependency injection
         $this->app->instance(AuthService::class, $this->authServiceMock);
 
-        // Create an instance of the AuthController
         $this->authController = new AuthController($this->authServiceMock);
 
-        
         $this->withoutMiddleware('tenant');
+    }
+
+    protected function createTenantAndUser($email = 'johndoe@example.com', $password = 'password123')
+    {
+        $tenant = Tenant::factory()->create();
+        $user = User::factory()->create([
+            'tenant_id' => $tenant->id,
+            'email' => $email,
+            'password' => bcrypt($password),
+        ]);
+
+        return [$tenant, $user];
+    }
+
+    protected function createTokenForUser(User $user)
+    {
+        return $user->createToken('TestToken')->plainTextToken;
     }
 
     public function testRegister()
     {
-        // Prepare the mock return value
-        $validatedData = ['name' => 'John Doe', 'email' => 'john@example.com', 'password' => 'password123'];
         $this->authServiceMock->shouldReceive('register')
             ->once()
-            ->with($validatedData)
-            ->andReturn(['token' => 'fake-token']); // Simulating the response from the service
+            ->with([
+                'name' => 'John Doe',
+                'email' => 'john@example.com',
+                'password' => 'password123'
+            ])
+            ->andReturn(['token' => 'fake-token']);
 
-        // Simulate a request to the register route
-        $response = $this->postJson('/api/register', $validatedData);
-
-        // Assert that the status code is 201 (created)
-        $response->assertStatus(201);
-
-        // Assert that the response contains the correct data
-        $response->assertJson([
-            'token' => 'fake-token',
+        $response = $this->postJson('/api/register', [
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+            'password' => 'password123'
         ]);
+
+        $response->assertStatus(201)->assertJson(['token' => 'fake-token']);
     }
 
     public function testLogin()
     {
-        // Create a user to simulate login
-        $tenant = Tenant::factory()->create();
-        $user = User::factory()->create([
-            'email' => 'johndoe@example.com',
-            'password' => bcrypt('password123'),
-            'tenant_id' => $tenant->id,
-        ]);
+        list($tenant, $user) = $this->createTenantAndUser();
 
-        // Set up the mock to return a response when 'login' is called
         $this->authServiceMock->shouldReceive('login')
             ->once()
             ->with([
@@ -75,114 +78,74 @@ class AuthControllerTest extends TestCase
             ])
             ->andReturn(['token' => 'fake-token']);
 
-        // Act: Make the request to the login route
         $response = $this->postJson('/api/login', [
             'email' => 'johndoe@example.com',
             'password' => 'password123',
         ]);
 
-        // Assert: Check if the response status is 200 and contains the expected token
-        $response->assertStatus(200)
-                 ->assertJson([
-                     'token' => 'fake-token',
-                 ]);
+        $response->assertStatus(200)->assertJson(['token' => 'fake-token']);
     }
 
     public function testRetrieveToken()
     {
-        $tenant = Tenant::factory()->create([
-            'subdomain' => 'example',
-        ]);
-        $user = User::factory()->create([
-            'tenant_id' => $tenant->id,
-        ]);
-
+        list($tenant, $user) = $this->createTenantAndUser();
+        
         $this->authServiceMock->shouldReceive('retrieveToken')
             ->once()
             ->with($tenant->id)
             ->andReturn(['token' => 'fake-token']);
 
-        $response = $this->getJson('http://' . $tenant->subdomain . '.' . env('APP_DOMAIN') . '/api/retrieve-token', []);
-
-        $response->assertStatus(200);
-        $response->assertJson([
-            'token' => 'fake-token',
-        ]);
+        $response = $this->getJson("http://{$tenant->subdomain}." . env('APP_DOMAIN') . '/api/retrieve-token');
+        $response->assertStatus(200)->assertJson(['token' => 'fake-token']);
     }
 
     public function testLogout()
     {
-        $tenant = Tenant::factory()->create([
-            'subdomain' => 'example',
-        ]);
-        $user = User::factory()->create([
-            'email' => 'johndoe@example.com',
-            'password' => bcrypt('password123'),
-            'tenant_id' => $tenant->id,
-        ]);
+        list($tenant, $user) = $this->createTenantAndUser();
 
-        $token = $user->createToken('TestToken')->plainTextToken;
+        $token = $this->createTokenForUser($user);
 
         $this->authServiceMock->shouldReceive('logout')
             ->once()
             ->andReturn(['message' => 'Logged out successfully']);
 
-        // Act: Make the logout request with the valid token, and disable the tenant middleware
         $response = $this->withHeaders([
-                'Authorization' => 'Bearer ' . $token,
-                'Host' => 'example.localhost',
+                'Authorization' => "Bearer {$token}",
+                'Host' => "{$tenant->subdomain}.localhost",
             ])
-            ->post('http://' . $tenant->subdomain . '.' . env('APP_DOMAIN') . '/api/logout', []);
+            ->post("http://{$tenant->subdomain}." . env('APP_DOMAIN') . '/api/logout');
 
-        // Assert: Check if the response status is 200 and the message is correct
-        $response->assertStatus(200);
-        $response->assertJson(['message' => 'Logged out successfully']);
+        $response->assertStatus(200)->assertJson(['message' => 'Logged out successfully']);
     }
 
     public function testLoginValidation()
     {
-        // Test invalid email
-        $response = $this->postJson('/api/login', [
+        $this->postJson('/api/login', [
             'email' => 'invalid-email',
             'password' => 'password123',
-        ]);
-        $response->assertStatus(422); // Unprocessable Entity status code
-        $response->assertJsonValidationErrors('email'); // Assert email validation error
+        ])->assertStatus(422)->assertJsonValidationErrors('email');
 
-        // Test missing email
-        $response = $this->postJson('/api/login', [
+        $this->postJson('/api/login', [
             'password' => 'password123',
-        ]);
-        $response->assertStatus(422);
-        $response->assertJsonValidationErrors('email'); // Assert email validation error
+        ])->assertStatus(422)->assertJsonValidationErrors('email');
 
-        // Test missing password
-        $response = $this->postJson('/api/login', [
+        $this->postJson('/api/login', [
             'email' => 'johndoe@example.com',
-        ]);
-        $response->assertStatus(422);
-        $response->assertJsonValidationErrors('password'); // Assert password validation error
+        ])->assertStatus(422)->assertJsonValidationErrors('password');
     }
 
     public function testInvalidRoute()
     {
-        // Sending a GET request to a non-existent route
-        $response = $this->getJson('/api/logins');
-        
-        $response->assertStatus(404);
+        $this->getJson('/api/logins')->assertStatus(404);
     }
 
     public function testInvalidMethod()
     {
-        // Test a POST request to a route that only allows GET (for example)
-        $response = $this->getJson('/api/login', [
+        $this->getJson('/api/login', [
             'email' => 'johndoe@example.com',
             'password' => 'password123',
-        ]);
-        $response->assertStatus(405);
+        ])->assertStatus(405);
 
-        // Test GET request for a route that expects POST (example)
-        $response = $this->getJson('/api/register');
-        $response->assertStatus(405);
+        $this->getJson('/api/register')->assertStatus(405);
     }
 }

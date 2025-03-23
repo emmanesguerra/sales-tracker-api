@@ -17,23 +17,32 @@ class TokenServiceTest extends TestCase
         $this->tokenService = new TokenService();
     }
 
-    public function testGeneratesATokenFoUser()
+    public function testGeneratesATokenForUser()
     {
-        // Arrangement
+        // Arrange: Create a mock User object
         $user = Mockery::mock(User::class)->makePartial();
-        
+
+        // Mock the token response
         $tokenMock = Mockery::mock(\stdClass::class);
         $tokenMock->plainTextToken = 'fake_token';
 
+        // Expect the createToken method to be called once
         $user->shouldReceive('createToken')
             ->once()
             ->with('API Token')
             ->andReturn($tokenMock);
-        
-        // Action: Generate the token using TokenService
+
+        // Act: Generate the token using TokenService
         $token = $this->tokenService->generateToken($user);
 
-        // Assertion: The returned token should be the same as the fake token
+        // Assert: The returned token should match the fake token
         $this->assertEquals('fake_token', $token);
+    }
+
+    public function tearDown(): void
+    {
+        // Clean up Mockery
+        Mockery::close();
+        parent::tearDown();
     }
 }
