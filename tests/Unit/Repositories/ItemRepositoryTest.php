@@ -55,6 +55,7 @@ class ItemRepositoryTest extends TestCase
 
         $data = [
             'name' => 'Test Item',
+            'code' => 'Item',
             'description' => 'Test Description',
             'price' => 100.50,
             'stock' => 10,

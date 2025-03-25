@@ -88,6 +88,7 @@ class ItemControllerTest extends TestCase
     {
         $data = [
             'name' => 'New Item',
+            'code' => 'Item',
             'description' => 'Description here',
             'price' => 99.99,
             'stock' => 10,

@@ -18,6 +18,7 @@ class Item extends Model
 
     protected $fillable = [ 
         'tenant_id',
+        'code',
         'name',
         'description',
         'price',
