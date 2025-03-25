@@ -109,14 +109,8 @@ class AuthServiceTest extends TestCase
 
         $this->tokenService->shouldReceive('generateToken')->once()->with($user)->andReturn('token');
 
-        $user->shouldReceive('getAttribute')
-            ->with('tenant')
-            ->andReturnUsing(function() use ($tenant) {
-                return $tenant;
-            });
-
+        $user->shouldReceive('getAttribute')->once()->with('tenant')->andReturn($tenant);
         $tenant->shouldReceive('getAttribute')->once()->with('subdomain')->andReturn('example-subdomain');
-        $tenant->shouldReceive('getAttribute')->once()->with('id')->andReturn(1);
 
         // Act: Call the retrieveToken method
         $response = $this->authService->retrieveToken(1);
@@ -124,7 +118,6 @@ class AuthServiceTest extends TestCase
         // Assert: Check the response
         $this->assertArrayHasKey('token', $response);
         $this->assertArrayHasKey('subdomain', $response);
-        $this->assertArrayHasKey('tenant_id', $response);
     }
 
     public function testLogsOutAUserAndDeletesTokens()

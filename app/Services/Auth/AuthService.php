@@ -75,7 +75,6 @@ class AuthService
         return [
             'token' => $token,
             'subdomain' => $user->tenant->subdomain,
-            'tenant_id' => $user->tenant->id,
         ];
     }
 
