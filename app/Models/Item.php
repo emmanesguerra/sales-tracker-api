@@ -14,6 +14,13 @@ class Item extends Model
     protected static function booted()
     {
         static::addGlobalScope(new TenantScope());
+
+        static::creating(function ($item) {
+            if (auth()->check()) {
+                // Attach tenant_id from the authenticated user
+                $item->tenant_id = auth()->user()->tenant_id;
+            }
+        });
     }
 
     protected $fillable = [ 
