@@ -20,7 +20,6 @@ class CreateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tenant_id' => 'required|exists:tenants,id',
             'code' => 'required|string|max:30|unique:items,code',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
