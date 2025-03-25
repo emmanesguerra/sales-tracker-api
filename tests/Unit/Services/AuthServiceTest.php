@@ -104,15 +104,20 @@ class AuthServiceTest extends TestCase
     {
         // Arrangement
         $user = Mockery::mock(User::class);
+        $tenant = Mockery::mock(Tenant::class);
         $this->authRepository->shouldReceive('findByTenantId')->once()->with(1)->andReturn($user);
 
         $this->tokenService->shouldReceive('generateToken')->once()->with($user)->andReturn('token');
+
+        $user->shouldReceive('getAttribute')->once()->with('tenant')->andReturn($tenant);
+        $tenant->shouldReceive('getAttribute')->once()->with('subdomain')->andReturn('example-subdomain');
 
         // Act: Call the retrieveToken method
         $response = $this->authService->retrieveToken(1);
 
         // Assert: Check the response
         $this->assertArrayHasKey('token', $response);
+        $this->assertArrayHasKey('subdomain', $response);
     }
 
     public function testLogsOutAUserAndDeletesTokens()
