@@ -23,10 +23,10 @@ class QRCodeService
 
     public function generateQRCodeForPdf(array $data)
     {
-        $items = $this->itemRepository->findByArray('id', $data);
+        $items = $this->itemRepository->findByArray('id', $data['selectedItems']);
 
-        $htmlQrList = $this->generateQrCodesHtml($items);
-        $pdfFilePath = $this->createPdf($htmlQrList);
+        $htmlQrList = $this->generateQrCodesHtml($items, $data['isGrid']);
+        $pdfFilePath = $this->createPdf($htmlQrList, $data['isGrid']);
 
         return response()->download($pdfFilePath);
     }
@@ -34,17 +34,27 @@ class QRCodeService
     /**
      * Generate QR codes and return as HTML.
      */
-    private function generateQrCodesHtml(Collection  $items): string
+    private function generateQrCodesHtml(Collection  $items, bool $isGrid): string
     {
         $renderer = new GDLibRenderer(400);
         $writer = new Writer($renderer);
         $htmlQrList = '';
 
+        $ctr = 0;
         foreach ($items as $item) {
             $qrCode = $writer->writeString($item->id . ' - ' . $item->name);
             $base64QrCode = base64_encode($qrCode);
 
-            $htmlQrList .= $this->generateQrCodeHtml($base64QrCode, $item->name);
+            if($isGrid) {
+                $htmlQrList .= $this->generateQrCodeHtml($base64QrCode, $item->name);
+            } else {
+                $htmlQrList .= $this->generateQrCodeTableHtml($base64QrCode, $item->name);
+            }
+            $ctr++;
+            if($ctr == 3) { // 3 QR codes per row
+                $htmlQrList .= '<div style="clear:both;"></div>';
+                $ctr = 0;
+            }
         }
 
         return $htmlQrList;
@@ -67,11 +77,11 @@ class QRCodeService
     {
         return <<<HTML
             <tr>
-                <td width="80%">
-                    <span style="padding: 15px; font-size: 1.2rem">{$itemName}</span>
+                <td width="70%">
+                    <span style="padding: 15px; font-size: 1.8rem">{$itemName}</span>
                 </td>
                 <td style="text-align:center;">
-                    <img src="data:image/png;base64,{$base64QrCode}" alt="QR Code" height="110px" width="110px"/>
+                    <img src="data:image/png;base64,{$base64QrCode}" alt="QR Code" height="175px" width="175px"/>
                 </td>
             </tr>
         HTML;
@@ -80,15 +90,19 @@ class QRCodeService
     /**
      * Generate and save a PDF file with the given QR code HTML content.
      */
-    private function createPdf(string $htmlQrList): string
+    private function createPdf(string $htmlQrList, bool $isGrid): string
     {
         $options = new Options();
         $options->set('isHtml5ParserEnabled', true);
         $options->set('isPhpEnabled', true);
 
         $dompdf = new Dompdf($options);
-        $dompdf->loadHtml("<html><body>{$htmlQrList}</body></html>");
-        // $dompdf->loadHtml("<html><body><table width='100%' style='border-collapse: collapse' border='1'>{$htmlQrList}</table></body></html>");
+
+        if($isGrid) {
+            $dompdf->loadHtml("<html><body>{$htmlQrList}</body></html>");
+        } else {
+            $dompdf->loadHtml("<html><body style='margin: 0; padding: 0;'><table width='100%' style='border-collapse: collapse' border='1' cellpadding='8'>{$htmlQrList}</table></body></html>");
+        }
         $dompdf->render();
 
         // Define the file path

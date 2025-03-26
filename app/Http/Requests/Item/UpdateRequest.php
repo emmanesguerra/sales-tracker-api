@@ -21,7 +21,7 @@ class UpdateRequest extends FormRequest
     {
         return [
             'name' => 'sometimes|required|string|max:255',
-            'code' => 'sometimes|required|string|max:30|unique:items,code',
+            'code' => 'sometimes|required|string|max:30|unique:items,code,' . $this->route('item'),
             'description' => 'nullable|string',
             'price' => 'sometimes|required|numeric|min:0',
             'stock' => 'sometimes|required|integer|min:0',
