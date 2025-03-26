@@ -25,6 +25,11 @@ class SalesService
         $this->itemRepository = $itemRepository;
         $this->csvParserService = $csvParserService;
     }
+    
+    public function getSalesByDate(string $date)
+    {
+        return $this->salesRepository->findByOrderDate($date);
+    }
 
     public function uploadCsv($file): JsonResponse
     {

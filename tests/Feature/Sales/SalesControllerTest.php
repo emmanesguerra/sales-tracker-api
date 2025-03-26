@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Controllers;
 
+use App\Models\SalesOrder;
+use App\Models\Item;
 use App\Models\User;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -94,5 +96,41 @@ class SalesControllerTest extends TestCase
                 'file' => ['No file was uploaded.']
             ]
         ]);
+    }
+
+    public function test_index_returns_sales_by_date()
+    {
+        // Create mock data for sales and items
+        $item = Item::factory()->create(['name' => 'Test Item', 'price' => 100]);
+        $salesOrder = SalesOrder::factory()->create([
+            'order_date' => '2025-03-25',
+            'order_time' => '14:00',
+            'item_id' => $item->id,
+            'quantity' => 2,
+            'total_amount' => 200,
+        ]);
+
+        // Mock SalesService to return the created sales order
+        $salesServiceMock = Mockery::mock(SalesService::class);
+        $this->app->instance(SalesService::class, $salesServiceMock);
+        
+        // Expect the service to return the sales data by date
+        $salesServiceMock->shouldReceive('getSalesByDate')
+                         ->once()
+                         ->with('2025-03-25')
+                         ->andReturn(collect([$salesOrder]));
+
+        // Build the URL for the index endpoint
+        $url = $this->buildUrl('/api/sales-orders');
+
+        // Send a GET request to the endpoint with the date parameter
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $this->token,
+        ])->json('GET', $url, [
+            'date' => '2025-03-25',
+        ]);
+
+        // Assert that the response status is 200
+        $response->assertStatus(200);
     }
 }

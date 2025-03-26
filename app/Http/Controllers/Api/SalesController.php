@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Services\Sales\SalesService;
 use Illuminate\Http\Request;
 use App\Http\Requests\UploadCsvRequest;
+use App\Http\Requests\SalesOrderRequest;
+use App\Http\Resources\SalesResource;
+
 
 class SalesController extends Controller
 {
@@ -14,6 +17,12 @@ class SalesController extends Controller
     public function __construct(SalesService $salesService)
     {
         $this->salesService = $salesService;
+    }
+
+    public function index(SalesOrderRequest $request)
+    {   
+        $list = $this->salesService->getSalesByDate($request->date);
+        $data = SalesResource::collection($list)->resource;
     }
 
     public function upload(UploadCsvRequest $request)

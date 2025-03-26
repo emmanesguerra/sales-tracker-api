@@ -11,4 +11,9 @@ class SalesRepository extends BaseRepository implements SalesRepositoryInterface
     {
         parent::__construct($model);
     }
+
+    public function findByOrderDate(string $date)
+    {
+        return $this->findAllByColumn('order_date', $date);
+    }
 }
