@@ -17,6 +17,11 @@ class ItemRepository implements ItemRepositoryInterface
         return Item::find($id);
     }
 
+    public function findByArray(string $field, array $data)
+    {
+        return Item::whereIn($field, $data)->get();
+    }
+
     public function create(array $data)
     {
         return Item::create($data);
@@ -29,9 +34,9 @@ class ItemRepository implements ItemRepositoryInterface
         return $item;
     }
 
-    public function delete(int $id)
+    public function delete(int $id): void
     {
         $item = Item::findOrFail($id);
-        return $item->delete();
+        $item->delete();
     }
 }

@@ -7,6 +7,8 @@ interface ItemRepositoryInterface
     public function getAll();
     
     public function findById(int $id);
+
+    public function findByArray(string $field, array $data);
     
     public function create(array $data);
     
