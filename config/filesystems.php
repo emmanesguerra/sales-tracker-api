@@ -60,6 +60,11 @@ return [
             'report' => false,
         ],
 
+        'csv_uploads' => [
+            'driver' => 'local',
+            'root' => storage_path('app/csv_uploads'),
+        ],
+
     ],
 
     /*

@@ -10,6 +10,9 @@ use App\Repositories\Auth\TenantRepositoryInterface;
 use App\Repositories\Auth\TenantRepository;
 use App\Repositories\Item\ItemRepositoryInterface;
 use App\Repositories\Item\ItemRepository;
+use App\Repositories\Sales\SalesRepository;
+use App\Repositories\Sales\SalesRepositoryInterface;
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AuthRepositoryInterface::class, AuthRepository::class);
         $this->app->bind(TenantRepositoryInterface::class, TenantRepository::class);
         $this->app->bind(ItemRepositoryInterface::class, ItemRepository::class);
+        $this->app->bind(SalesRepositoryInterface::class, SalesRepository::class);
     }
 
     /**

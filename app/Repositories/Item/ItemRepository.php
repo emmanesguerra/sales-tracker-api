@@ -22,6 +22,11 @@ class ItemRepository implements ItemRepositoryInterface
         return Item::whereIn($field, $data)->get();
     }
 
+    public function findOneRecordBy(string $field, string $data)
+    {
+        return Item::where($field, $data)->first();
+    }
+
     public function create(array $data)
     {
         return Item::create($data);
