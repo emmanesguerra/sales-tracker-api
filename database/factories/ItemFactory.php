@@ -22,7 +22,7 @@ class ItemFactory extends Factory
 
         return [
             'tenant_id' => $tenant->id,
-            'code' => $this->faker->word(),
+            'code' => $this->faker->unique()->word(),
             'name' => $this->faker->word(),
             'description' => $this->faker->sentence(),
             'price' => $this->faker->randomFloat(2, 1, 1000), // Price between 1 and 1000
