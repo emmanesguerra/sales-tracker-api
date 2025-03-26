@@ -3,11 +3,12 @@
 namespace App\Repositories\Sales;
 
 use App\Models\SalesOrder;
+use App\Repositories\BaseRepository;
 
-class SalesRepository implements SalesRepositoryInterface
+class SalesRepository extends BaseRepository implements SalesRepositoryInterface
 {
-    public function create(array $data) : SalesOrder
+    public function __construct(SalesOrder $model)
     {
-        return SalesOrder::create($data);
+        parent::__construct($model);
     }
 }

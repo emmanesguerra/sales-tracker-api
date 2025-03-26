@@ -3,29 +3,23 @@
 namespace App\Repositories\Auth;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-use App\Repositories\Auth\AuthRepositoryInterface;
+use App\Repositories\BaseRepository;
 
-class AuthRepository implements AuthRepositoryInterface
+class AuthRepository extends BaseRepository implements AuthRepositoryInterface
 {
-    public function createUser(array $data): User
+    public function __construct(User $user)
     {
-        return User::create([
-            'tenant_id' => $data['tenant_id'],
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-        ]);
+        parent::__construct($user);
     }
 
-    public function findByEmail(string $email): User
+    public function findByEmail(string $email): ?User
     {
-        return User::where('email', $email)->first();
+        return $this->findByColumn('email', $email);
     }
 
-    public function findByTenantId(int $tenantId): User
+    public function findByTenantId(int $tenantId): ?User
     {
-        return User::where('tenant_id', $tenantId)->first();
+        return $this->findByColumn('tenant_id', $tenantId);
     }
 
     public function deleteTokens(User $user): void

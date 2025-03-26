@@ -92,8 +92,8 @@ class AuthRepositoryTest extends TestCase
         $this->authRepository->shouldReceive('deleteTokens')
             ->once()
             ->with($userMock)
-            ->andReturnUsing(function ($user) {
-                $authRepository = new AuthRepository();
+            ->andReturnUsing(function ($user) use ($userMock) {
+                $authRepository = new AuthRepository($userMock);
                 $authRepository->deleteTokens($user);
             });
 

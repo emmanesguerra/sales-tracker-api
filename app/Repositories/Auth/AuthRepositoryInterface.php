@@ -3,10 +3,10 @@
 namespace App\Repositories\Auth;
 
 use App\Models\User;
+use App\Repositories\BaseRepositoryInterface;
 
-interface AuthRepositoryInterface
+interface AuthRepositoryInterface extends BaseRepositoryInterface
 {
-    public function createUser(array $data): User;
     public function findByEmail(string $email): ?User;
     public function findByTenantId(int $tenantId): ?User;
     public function deleteTokens(User $user): void;

@@ -2,19 +2,12 @@
 
 namespace App\Repositories\Item;
 
-interface ItemRepositoryInterface
-{
-    public function getAll();
-    
-    public function findById(int $id);
+use App\Repositories\BaseRepositoryInterface;
+use Illuminate\Database\Eloquent\Model;
 
+interface ItemRepositoryInterface extends BaseRepositoryInterface
+{
     public function findByArray(string $field, array $data);
 
-    public function findOneRecordBy(string $field, string $data);
-    
-    public function create(array $data);
-    
-    public function update(int $id, array $data);
-    
-    public function delete(int $id);
+    public function findOneRecordBy(string $field, string $data): ?Model;
 }

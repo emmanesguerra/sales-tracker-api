@@ -3,45 +3,23 @@
 namespace App\Repositories\Item;
 
 use App\Models\Item;
-use App\Repositories\Item\ItemRepositoryInterface;
+use App\Repositories\BaseRepository;
+use Illuminate\Database\Eloquent\Model;
 
-class ItemRepository implements ItemRepositoryInterface
+class ItemRepository extends BaseRepository implements ItemRepositoryInterface
 {
-    public function getAll()
+    public function __construct(Item $model)
     {
-        return Item::all();
-    }
-
-    public function findById(int $id)
-    {
-        return Item::find($id);
+        parent::__construct($model);
     }
 
     public function findByArray(string $field, array $data)
     {
-        return Item::whereIn($field, $data)->get();
+        return $this->findWhereIn($field, $data);
     }
 
-    public function findOneRecordBy(string $field, string $data)
+    public function findOneRecordBy(string $field, string $data): ?Model
     {
-        return Item::where($field, $data)->first();
-    }
-
-    public function create(array $data)
-    {
-        return Item::create($data);
-    }
-
-    public function update(int $id, array $data)
-    {
-        $item = Item::findOrFail($id);
-        $item->update($data);
-        return $item;
-    }
-
-    public function delete(int $id): void
-    {
-        $item = Item::findOrFail($id);
-        $item->delete();
+        return $this->findByColumn($field, $data);
     }
 }

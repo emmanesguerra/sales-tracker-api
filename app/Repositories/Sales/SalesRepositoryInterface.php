@@ -2,9 +2,9 @@
 
 namespace App\Repositories\Sales;
 
-use App\Models\SalesOrder;
+use App\Repositories\BaseRepositoryInterface;
 
-interface SalesRepositoryInterface
+interface SalesRepositoryInterface extends BaseRepositoryInterface
 {
-    public function create(array $data): SalesOrder;
+    
 }

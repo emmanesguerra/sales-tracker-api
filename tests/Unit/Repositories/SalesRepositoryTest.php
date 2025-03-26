@@ -1,5 +1,4 @@
 <?php
-
 namespace Tests\Unit\Repositories\Sales;
 
 use App\Repositories\Sales\SalesRepository;
@@ -10,13 +9,17 @@ use Mockery;
 class SalesRepositoryTest extends TestCase
 {
     protected $salesRepository;
+    protected $salesOrderMock;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        // Create an instance of the repository
-        $this->salesRepository = new SalesRepository();
+        // Mock the SalesOrder model if needed for repository
+        $this->salesOrderMock = Mockery::mock(SalesOrder::class);
+
+        // Create an instance of the repository, passing the mocked SalesOrder model if needed
+        $this->salesRepository = new SalesRepository($this->salesOrderMock);
     }
 
     public function testCreate()
@@ -31,14 +34,12 @@ class SalesRepositoryTest extends TestCase
             'total_amount'=> 500,
         ];
 
-        // Mock the SalesOrder model and mock the create method
-        $salesOrderMock = Mockery::mock('overload:' . SalesOrder::class);
-        
-        // Make the create method return an instance with the given data
-        $salesOrderMock->shouldReceive('create')
+        // Instead of mocking the SalesOrder create method, mock the repository create method
+        $this->salesOrderMock->shouldReceive('create')
             ->once()
             ->with($data)
             ->andReturnUsing(function($args) {
+                // Simulate creating a SalesOrder instance
                 $salesOrder = new SalesOrder();
                 $salesOrder->order_date = $args['order_date'];
                 $salesOrder->order_time = $args['order_time'];
@@ -52,10 +53,10 @@ class SalesRepositoryTest extends TestCase
         // Call the create method on the repository
         $salesOrder = $this->salesRepository->create($data);
 
-        // Assert that the returned object is the mocked SalesOrder instance
+        // Assert that the returned object is an instance of SalesOrder
         $this->assertInstanceOf(SalesOrder::class, $salesOrder);
 
-        // Assert that the returned data matches the input
+        // Assert that the returned data matches the input data
         $this->assertEquals($data['order_date'], $salesOrder->order_date);
         $this->assertEquals($data['order_time'], $salesOrder->order_time);
         $this->assertEquals($data['item_id'], $salesOrder->item_id);
