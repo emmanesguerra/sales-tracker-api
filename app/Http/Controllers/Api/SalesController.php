@@ -23,6 +23,7 @@ class SalesController extends Controller
     {   
         $list = $this->salesService->getSalesByDate($request->date);
         $data = SalesResource::collection($list)->resource;
+        return response()->json($data, 200);
     }
 
     public function upload(UploadCsvRequest $request)
