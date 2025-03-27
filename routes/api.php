@@ -24,6 +24,7 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::post('/qr-code/generate', [QRCodeController::class, 'generate']);
     
     Route::post('/upload-csv', [SalesController::class, 'upload']);
-    Route::get('/sales-orders', [SalesController::class, 'index']);
+    Route::get('/sales-order', [SalesController::class, 'index']);
+    Route::post('/sales-order/generate', [SalesController::class, 'generate']);
 });
 

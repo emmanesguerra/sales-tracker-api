@@ -66,4 +66,9 @@ abstract class BaseRepository implements BaseRepositoryInterface
     {
         return $this->model->paginate($perPage);
     }
+
+    public function findBetween(string $column, $startValue, $endValue): Collection
+    {
+        return $this->model->whereBetween($column, [$startValue, $endValue])->get();
+    }
 }

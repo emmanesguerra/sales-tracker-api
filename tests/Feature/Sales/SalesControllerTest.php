@@ -121,7 +121,7 @@ class SalesControllerTest extends TestCase
                          ->andReturn(collect([$salesOrder]));
 
         // Build the URL for the index endpoint
-        $url = $this->buildUrl('/api/sales-orders');
+        $url = $this->buildUrl('/api/sales-order');
 
         // Send a GET request to the endpoint with the date parameter
         $response = $this->withHeaders([

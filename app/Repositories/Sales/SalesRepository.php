@@ -16,4 +16,9 @@ class SalesRepository extends BaseRepository implements SalesRepositoryInterface
     {
         return $this->findAllByColumn('order_date', $date);
     }
+
+    public function getSalesByDateRange($startDate, $endDate)
+    {
+        return $this->findBetween('order_date', $startDate, $endDate);
+    }
 }

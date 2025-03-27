@@ -38,4 +38,14 @@ class SalesController extends Controller
         $file = $request->file('file');
         return $this->salesService->uploadCsv($file);
     }
+
+    public function generate(Request $request)
+    {
+        try {
+            $reportFile = $this->salesService->generateReport($request);
+            return response()->download($reportFile);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to generate report: ' . $e->getMessage()], 500);
+        }
+    }
 }
