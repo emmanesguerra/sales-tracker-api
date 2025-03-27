@@ -26,6 +26,11 @@ class SalesService
         $this->csvParserService = $csvParserService;
     }
     
+    public function getAllSales()
+    {
+        return $this->salesRepository->getAll();
+    }
+    
     public function getSalesByDate(string $date)
     {
         return $this->salesRepository->findByOrderDate($date);

@@ -23,7 +23,7 @@ class SalesOrderRequest extends FormRequest
     public function rules()
     {
         return [
-            'date' => 'required|date', // Make 'date' field required and ensure it's a valid date
+            'date' => 'sometimes|date', // Make 'date' field required and ensure it's a valid date
         ];
     }
 }

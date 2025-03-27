@@ -21,7 +21,14 @@ class SalesController extends Controller
 
     public function index(SalesOrderRequest $request)
     {   
-        $list = $this->salesService->getSalesByDate($request->date);
+        $date = $request->date;
+    
+        if ($date) {
+            $list = $this->salesService->getSalesByDate($date);
+        } else {
+            $list = $this->salesService->getAllSales();
+        }
+
         $data = SalesResource::collection($list)->resource;
         return response()->json($data, 200);
     }
