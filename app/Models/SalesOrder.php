@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -7,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Scopes\TenantScope;
 use App\Traits\UserStamp;
 
-class Item extends Model
+class SalesOrder extends Model
 {
     use HasFactory, SoftDeletes, UserStamp;
 
@@ -23,20 +24,21 @@ class Item extends Model
         });
     }
 
-    protected $fillable = [ 
+    protected $fillable = [
         'tenant_id',
-        'code',
-        'name',
-        'description',
-        'price',
-        'stock',
+        'order_date',
+        'order_time',
+        'item_id',
+        'item_price',
+        'quantity',
+        'total_amount',
     ];
 
-    protected $dates = ['deleted_at'];
-
-    // Relationships
-    public function tenant()
+    /**
+     * Define the relationship between SalesOrder and Item.
+     */
+    public function item()
     {
-        return $this->belongsTo(Tenant::class);
+        return $this->belongsTo(Item::class, 'item_id');
     }
 }

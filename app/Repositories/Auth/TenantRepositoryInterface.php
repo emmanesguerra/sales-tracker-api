@@ -3,9 +3,9 @@
 namespace App\Repositories\Auth;
 
 use App\Models\Tenant;
+use App\Repositories\BaseRepositoryInterface;
 
-interface TenantRepositoryInterface
+interface TenantRepositoryInterface extends BaseRepositoryInterface
 {
-    public function createTenant(array $data): Tenant;
     public function findBySubdomain(string $subdomain): ?Tenant;
 }

@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\ItemController;
+use App\Http\Controllers\Api\QRCodeController;
+use App\Http\Controllers\Api\SalesController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -18,5 +20,11 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::apiResource('items', ItemController::class);
+    
+    Route::post('/qr-code/generate', [QRCodeController::class, 'generate']);
+    
+    Route::post('/upload-csv', [SalesController::class, 'upload']);
+    Route::get('/sales-order', [SalesController::class, 'index']);
+    Route::post('/sales-order/generate', [SalesController::class, 'generate']);
 });
 

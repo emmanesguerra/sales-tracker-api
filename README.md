@@ -1,66 +1,189 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sales Tracker API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**Sales Tracker API** is a Laravel-based backend application that follows the Service-Repository design pattern. This API provides essential features for managing sales records, generating QR codes, uploading CSV data, and more. It supports multi-tenancy using a shared database and shared schema approach, ensuring efficient data management for multiple tenants with a single database.
 
-## About Laravel
+## Table of Contents
+- [Installation](#installation)
+- [Dependencies](#dependencies)
+- [Tech Stack](#tech-stack)
+- [API Routes](#api-routes)
+- [Folder Structure](#folder-structure)
+- [Architecture](#architecture)
+- [Usage](#usage)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Installation
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+To get started with the Sales Tracker API, follow these steps:
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+1. Clone this repository to your local machine:
 
-## Learning Laravel
+   ```bash
+   git clone https://github.com/emmanesguerra/sales-tracker-api.git
+   ```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+2. Navigate to the project directory:
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+   ```bash
+   cd sales-tracker-api
+   ```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+3. Install dependencies using Composer:
 
-## Laravel Sponsors
+   ```bash
+   composer install
+   ```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+4. Set up your environment configuration:
 
-### Premium Partners
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+5. Set up your database configuration:
 
-## Contributing
+   - Run migrations:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+     ```bash
+     php artisan migrate
+     ```
 
-## Code of Conduct
+6. Run the application locally:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+   ```bash
+   php artisan serve
+   ```
 
-## Security Vulnerabilities
+7. The API should now be accessible at `http://localhost:8000`.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Dependencies
 
-## License
+The Sales Tracker API requires the following dependencies:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- PHP ^8.2
+- Laravel Framework ^12.0
+- Laravel Sanctum for API authentication
+- Bacon QR Code for generating QR codes
+- PHPSpreadsheet for exporting sales data
+
+**Development Dependencies**:
+- FakerPHP for generating fake data
+- PHPUnit for unit testing
+
+To install the required dependencies, run:
+
+```bash
+composer install
+```
+
+## Tech Stack
+
+The following technologies, frameworks, and tools were used to build the **Sales Tracker API**:
+
+### Backend Framework
+- **Laravel**: A robust PHP framework used for building web applications. It provides elegant syntax and a rich set of tools for building scalable APIs.
+
+### Authentication
+- **Laravel Sanctum**: A simple package for API token authentication in Laravel.
+
+### Database
+- **MySQL** (or SQLite, depending on your setup): Used for storing data.
+- **Shared Database & Shared Schema**: Multi-tenancy is implemented using a shared database and schema approach, where tenant data is logically separated but stored in the same database.
+
+### QR Code Generation
+- **dompdf**: A library for generating PDF documents, used for generating sales reports or receipts.
+- **Bacon QR Code**: A library for generating QR codes, used in the API to track sales.
+
+### PDF and Spreadsheet Generation
+- **PHPSpreadsheet**: Used for handling spreadsheet files (e.g., CSV, Excel) related to sales data.
+
+### Testing
+- **PHPUnit**: A unit testing framework for testing the application’s functionality.
+- **FakerPHP**: Used to generate fake data, helpful for testing and database seeding.
+
+### Routing and Middleware
+- **Custom Middleware**: Used to handle multi-tenancy and secure routes for different tenants based on subdomains.
+
+### API Development
+- **RESTful API**: Built to manage users, sales orders, items, and generate QR codes.
+
+### Version Control
+- **Git**: Used for version control to track and manage project changes.
+
+## API Routes
+
+The API includes several routes for authentication, managing users, items, sales orders, and QR code generation.
+
+### Authentication
+- `POST /api/register`: Registers a new user.
+- `POST /api/login`: Logs a user in.
+- `POST /api/logout`: Logs the user out.
+
+### Routes (Protected by Authentication)
+- `GET /api/retrieve-token`: Retrieves a token for authenticated users.
+- `GET /api/user`: Retrieves the authenticated user.
+- `POST /api/upload-csv`: Uploads a CSV file with sales data.
+- `GET /api/sales-order`: Lists all sales orders.
+- `POST /api/sales-order/generate`: Generates a sales order report.
+- `POST /api/qr-code/generate`: Generates a QR code.
+
+### Item Routes (Protected by Authentication)
+- `GET /api/items`: Retrieves all items.
+- `POST /api/items`: Creates a new item.
+- `PUT /api/items/{id}`: Updates an item.
+- `DELETE /api/items/{id}`: Deletes an item.
+
+### Tenant Routes
+Tenant-specific routes must be accessed using subdomains and are secured by middleware to ensure data isolation.
+
+## Architecture
+
+### Multi-Tenancy with Shared Database and Shared Schema
+
+The Sales Tracker API utilizes a **shared database and shared schema** approach to implement multi-tenancy. This means that all tenants' data is stored in the same database, but each tenant’s data is logically separated using a **tenant identifier**, typically via subdomains. The tenant's identifier is included in the API request headers and URL to ensure that the correct data is accessed.
+
+This approach allows for efficient resource usage while maintaining logical isolation for each tenant's data.
+
+## Folder Structure
+
+Here is the folder structure for the Sales Tracker API project:
+
+```
+app/
+├── Exceptions/             # Custom exceptions
+├── Http/
+│   ├── Controllers/       # Controllers for handling API requests
+│   │   ├── Api/
+│   │   │   ├── AuthController.php
+│   │   │   ├── UserController.php
+│   │   │   ├── ItemController.php
+│   │   │   ├── QRCodeController.php
+│   │   │   └── SalesController.php
+│   ├── Middleware/        # Custom middleware (e.g., TenantMiddleware)
+│   ├── Requests/           # Custom form Requests
+├── Models/                 # Eloquent models for interacting with the database
+│   ├── Item.php
+│   ├── SalesOrder.php
+│   └── User.php
+├── Repositories/          # Service-Repository pattern implementation
+│   ├── ItemRepository.php
+│   └── SalesOrderRepository.php
+├── Services/              # Business logic services
+│   ├── QRCodeService.php
+│   └── SalesOrderService.php
+routes/
+├── api.php                # API routes definition
+.env                       # Environment configuration
+composer.json              # Composer dependencies and configurations
+phpunit.xml                # PHPUnit configuration
+```
+
+## Usage
+
+After setting up the environment and installing dependencies, you can begin using the API by making requests to the defined routes. Make sure to include the appropriate authentication tokens in the headers when accessing protected routes. Subdomains are returned after successful login
+
+Example of an authenticated request:
+
+```bash
+curl -X GET http://{subdomain}.localhost:8000/api/user -H "Authorization: Bearer <your_token>"
+```

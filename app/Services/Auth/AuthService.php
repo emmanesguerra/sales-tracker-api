@@ -72,7 +72,10 @@ class AuthService
         
         $token = $this->tokenService->generateToken($user);
 
-        return ['token' => $token];
+        return [
+            'token' => $token,
+            'subdomain' => $user->tenant->subdomain,
+        ];
     }
 
     public function logout($user)

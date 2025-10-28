@@ -2,65 +2,58 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Item;
+use App\Services\Item\ItemService;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Item\CreateRequest;
+use App\Http\Requests\Item\UpdateRequest;
 
 class ItemController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    protected $itemService;
+
+    public function __construct(ItemService $itemService)
     {
-        //
+        $this->itemService = $itemService;
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function index(): JsonResponse
     {
-        //
+        $items = $this->itemService->getAllItems();
+        return response()->json($items);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function show($id): JsonResponse
     {
-        //
+        try {
+            $item = $this->itemService->getItemById($id);
+            return response()->json($item);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 404);
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Item $item)
+    public function store(CreateRequest $request): JsonResponse
     {
-        //
+        $item = $this->itemService->createItem($request->validated());
+        return response()->json($item, 201);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Item $item)
+    public function update(UpdateRequest $request, $id): JsonResponse
     {
-        //
+            $item = $this->itemService->updateItem($id, $request->validated());
+            return response()->json($item);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Item $item)
+    public function destroy($id): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Item $item)
-    {
-        //
+        try {
+            $this->itemService->deleteItem($id);
+            return response()->json(['message' => 'Item deleted successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 404);
+        }
     }
 }

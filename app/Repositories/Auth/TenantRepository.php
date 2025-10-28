@@ -3,21 +3,17 @@
 namespace App\Repositories\Auth;
 
 use App\Models\Tenant;
-use App\Repositories\Auth\TenantRepositoryInterface;
+use App\Repositories\BaseRepository;
 
-class TenantRepository implements TenantRepositoryInterface
+class TenantRepository extends BaseRepository implements TenantRepositoryInterface
 {
-    public function createTenant(array $data): Tenant
+    public function __construct(Tenant $tenant)
     {
-        // Create a new tenant
-        return Tenant::create([
-            'subdomain' => $data['subdomain'],
-        ]);
+        parent::__construct($tenant);
     }
 
-    public function findBySubdomain($subdomain): Tenant
+    public function findBySubdomain($subdomain): ?Tenant
     {
-        // Find a tenant by subdomain
-        return Tenant::where('subdomain', $subdomain)->first();
+        return $this->findByColumn('subdomain', $subdomain);
     }
 }
